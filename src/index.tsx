@@ -1,5 +1,7 @@
 import React, { useContext } from 'react'
 import ReactDOMServer from 'react-dom/server'
+// @ts-ignore
+import DOMPurify from 'dompurify'
 
 type TranslateID = string
 type TranslateValues = {
@@ -37,7 +39,7 @@ export const TranslateProvider: React.FC<TranslateProviderProps> = ({children, .
 export const Translate = ({ id, values = {} }: TranslateProps) => {
 	const translate = useTranslate()
 
-	return <span dangerouslySetInnerHTML={{ __html: translate(id, values) }}/>
+	return <span dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(translate(id, values)) }}/>
 }
 
 export const useTranslate = () => {

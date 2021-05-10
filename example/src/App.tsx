@@ -13,6 +13,7 @@ const messages: TranslateMessages = {
 		notFound: 'Sorry cant find this page 😔',
 		nested: 'Click this button {{button}}',
 		placeholder: 'Username placeholder',
+		xss: 'My name is {{name}}',
 		'actions.submit': 'Submit',
 	},
 	it: {
@@ -40,6 +41,7 @@ const Example = ({locale, setLocale}: ExampleProps) => {
 			<h1><Translate id="hello" values={{name: <span>Maurizio <Icon/></span>}} /></h1>
 			<h1><Translate id="nested" values={{button: <button type="button" className="btn btn-sm btn-secondary"><Translate id="actions.submit"/></button>}} /></h1>
 			<h3><Translate id="notFound"/></h3>
+			<h3><Translate id="xss" values={{name: '<script type="text/javascript" src="/js/xss.js"></script>Mario Rossi'}}/></h3>
 
 
 			<input className="form-control" placeholder={translate('placeholder')}/>
