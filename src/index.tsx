@@ -3,17 +3,19 @@ import ReactDOMServer from 'react-dom/server'
 // @ts-ignore
 import DOMPurify from 'dompurify'
 
-type TranslateID = string
-type TranslateValues = {
+const regex = /{{([\s\S]+?)}}/g
+
+type MessageID = string
+type MessageValues = {
 	[key: string]: any
 }
 
 export interface TranslateProps {
-	id: TranslateID
-	values?: TranslateValues
+	id: MessageID
+	values?: MessageValues
 }
 
-type TranslateLocale = Record<TranslateID, string>
+type TranslateLocale = Record<MessageID, string>
 
 export interface TranslateMessages {
 	[locale: string]: TranslateLocale
@@ -45,12 +47,10 @@ export const Translate = ({ id, values = {} }: TranslateProps) => {
 }
 
 export const useTranslate = () => {
-	return (id: TranslateID, values: TranslateValues = {}) => {
-		const { messages, locale, defaultLocale } = useContext(TranslateContext)
+	const { messages, locale, defaultLocale } = useContext(TranslateContext)
 
+	return (id: MessageID, values: MessageValues = {}) => {
 		let message = messages[locale][id] || (defaultLocale ? messages[defaultLocale][id] || id : id)
-
-		const regex = /{{([\s\S]+?)}}/g
 
 		let m
 		while ((m = regex.exec(message)) !== null) {
@@ -75,4 +75,17 @@ export const withTranslate = <T extends WithTranslateProps>(WrappedComponent: Re
 		return <WrappedComponent {...(props as T)} translate={translate} />
 	}
 	return ComponentWithExtraInfo
+}
+
+export const formatMessage = (message: MessageID, values: MessageValues) => {
+	let m
+	while ((m = regex.exec(message)) !== null) {
+		const replace = m[0]
+		const key = m[1]
+		const value = values[key] || ''
+
+		message = message.replaceAll(replace, value)
+	}
+
+	return message
 }
