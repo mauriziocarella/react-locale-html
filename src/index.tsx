@@ -62,7 +62,7 @@ export const useTranslate = () => {
 				if (React.isValidElement(value)) value = ReactDOMServer.renderToStaticMarkup(<TranslateContext.Provider
 					value={{ messages, locale, defaultLocale }}>{value}</TranslateContext.Provider>)
 
-				message = message.replaceAll(replace, value)
+				message = message.replace(new RegExp(replace, 'g'), value)
 			}
 		}
 
@@ -88,7 +88,7 @@ export const formatMessage = (message: MessageID, values: MessageValues) => {
 			const key = m[1]
 			const value = values[key] || ''
 
-			message = message.replaceAll(replace, value)
+			message = message.replace(new RegExp(replace, 'g'), value)
 		}
 	}
 
