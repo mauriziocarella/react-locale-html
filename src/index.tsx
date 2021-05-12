@@ -52,15 +52,18 @@ export const useTranslate = () => {
 	return (id: MessageID, values: MessageValues = {}) => {
 		let message = messages[locale][id] || (defaultLocale ? messages[defaultLocale][id] || id : id)
 
-		let m
-		while ((m = regex.exec(message)) !== null) {
-			const replace = m[0]
-			const key = m[1]
-			let value = values[key] || ''
+		if (message) {
+			let m
+			while ((m = regex.exec(message)) !== null) {
+				const replace = m[0]
+				const key = m[1]
+				let value = values[key] || ''
 
-			if (React.isValidElement(value)) value = ReactDOMServer.renderToStaticMarkup(<TranslateContext.Provider value={{ messages, locale, defaultLocale }}>{value}</TranslateContext.Provider>)
+				if (React.isValidElement(value)) value = ReactDOMServer.renderToStaticMarkup(<TranslateContext.Provider
+					value={{ messages, locale, defaultLocale }}>{value}</TranslateContext.Provider>)
 
-			message = message.replaceAll(replace, value)
+				message = message.replaceAll(replace, value)
+			}
 		}
 
 		return message
@@ -78,13 +81,15 @@ export const withTranslate = <T extends WithTranslateProps>(WrappedComponent: Re
 }
 
 export const formatMessage = (message: MessageID, values: MessageValues) => {
-	let m
-	while ((m = regex.exec(message)) !== null) {
-		const replace = m[0]
-		const key = m[1]
-		const value = values[key] || ''
+	if (message) {
+		let m
+		while ((m = regex.exec(message)) !== null) {
+			const replace = m[0]
+			const key = m[1]
+			const value = values[key] || ''
 
-		message = message.replaceAll(replace, value)
+			message = message.replaceAll(replace, value)
+		}
 	}
 
 	return message
