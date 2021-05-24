@@ -37,6 +37,27 @@ const TranslateContext = React.createContext<TranslateProviderProps>({
 	locale: 'en'
 })
 
+const getReplacements = (message: MessageID): { key: string; replace: string }[] => {
+	const keys = []
+
+	let m
+	while ((m = regex.exec(message)) !== null) {
+		if (m.index === regex.lastIndex) {
+			regex.lastIndex++
+		}
+
+		const replace = m[0]
+		const key = m[1]
+
+		keys.push({
+			key,
+			replace
+		})
+	}
+
+	return keys
+}
+
 export const TranslateProvider: React.FC<TranslateProviderProps> = ({ children, ...props }) => {
 	return <TranslateContext.Provider value={props} children={children} />
 }
@@ -54,23 +75,15 @@ export const useTranslate = () => {
 		let message = messages[locale][id] || (defaultLocale ? messages[defaultLocale][id] || id : id)
 
 		if (message) {
-			const org = message
+			const keys = getReplacements(message)
 
-			let m
-			while ((m = regex.exec(org)) !== null) {
-				if (m.index === regex.lastIndex) {
-					regex.lastIndex++
-				}
-
-				const replace = m[0]
-				const key = m[1]
-
+			keys.forEach(({ key, replace }) => {
 				let value = get(values, key) || ''
 
 				if (React.isValidElement(value)) value = ReactDOMServer.renderToStaticMarkup(<TranslateContext.Provider value={{ messages, locale, defaultLocale }}>{value}</TranslateContext.Provider>)
 
 				message = message.replace(new RegExp(replace, 'g'), value)
-			}
+			})
 		}
 
 		return message
@@ -78,25 +91,22 @@ export const useTranslate = () => {
 }
 
 export const withTranslate = <T extends WithTranslateProps>(WrappedComponent: React.ComponentType<T>) => {
-	const ComponentWithExtraInfo = (props: Omit<T, keyof WithTranslateProps>) => {
+	return (props: Omit<T, keyof WithTranslateProps>) => {
 		const translate = useTranslate()
 
-		// At this point, the props being passed in are the original props the component expects.
 		return <WrappedComponent {...(props as T)} translate={translate} />
 	}
-	return ComponentWithExtraInfo
 }
 
 export const formatMessage = (message: MessageID, values: MessageValues) => {
 	if (message) {
-		let m
-		while ((m = regex.exec(message)) !== null) {
-			const replace = m[0]
-			const key = m[1]
+		const keys = getReplacements(message)
+
+		keys.forEach(({ key, replace }) => {
 			const value = get(values, key) || ''
 
 			message = message.replace(new RegExp(replace, 'g'), value)
-		}
+		})
 	}
 
 	return message
